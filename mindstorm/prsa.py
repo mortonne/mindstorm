@@ -92,6 +92,21 @@ def init_pRSA(n_perm, model_rdms):
     return {'model_mats':model_mats, 'model_resid':model_resid}
 
 
+def perm_partial(data_vec, model_mat, model_resid):
+    """Calculate partial correlation for multiple permutations."""
+
+    # regress to get residuals from data similarity vector
+    beta = optim.nnls(model_mat, data_vec)[0]
+    data_resid = data_vec - model_mats.dot(beta)
+
+    # correlate with the residualized (random) model
+    xmat = data_resid.reshape((1, len(data_resid)))
+    stat = 1 - cdist(xmat, model_resid, 'correlation').squeeze()
+    if np.any(np.isnan(stat)):
+        raise ValueError('statistic is undefined.')
+    return stat
+
+
 def call_pRSA(subj, mask, sl_rad, bcast_var):
     """Function to pass when running partial RSA searchlight.
 
@@ -121,17 +136,11 @@ def call_pRSA(subj, mask, sl_rad, bcast_var):
     # unpack global data
     model_mats = bcast_var['model_mats']
     model_resid = bcast_var['model_resid']
-    
+
+    # calculate z-statistic for each partial correlation
     stat_all = []
     for i in range(len(model_mats)):
-        beta = optim.nnls(model_mats[i], data_vec)[0]
-        data_resid = data_vec - model_mats[i].dot(beta)
-
-        # correlate with the residualized (random) model
-        xmat = data_resid.reshape((1, len(data_resid)))
-        stat = 1 - cdist(xmat, model_resid[i], 'correlation').squeeze()
-        if np.any(np.isnan(stat)):
-            raise ValueError('statistic is undefined.')
+        stat = perm_partial(data_vec, model_mats[i], model_resid[i])
         stat_all.append(perm_z(stat))
 
     return tuple(stat_all)
