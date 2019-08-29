@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="mindstorm-mortonne",
+    name="mindstorm",
     version="0.0.1",
     author="Neal Morton",
     author_email="mortonne@gmail.com",
