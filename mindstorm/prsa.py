@@ -97,7 +97,7 @@ def perm_partial(data_vec, model_mat, model_resid):
 
     # regress to get residuals from data similarity vector
     beta = optim.nnls(model_mat, data_vec)[0]
-    data_resid = data_vec - model_mats.dot(beta)
+    data_resid = data_vec - model_mat.dot(beta)
 
     # correlate with the residualized (random) model
     xmat = data_resid.reshape((1, len(data_resid)))
