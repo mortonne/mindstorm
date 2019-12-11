@@ -5,13 +5,14 @@ import scipy.stats as stats
 import scipy.optimize as optim
 from scipy.spatial.distance import pdist, cdist, squareform
 
+
 def labels2rdm(labels):
     """Create an RDM from a vector with categorical labels."""
     n = len(labels[0])
     # get pairs where all labels are equal
-    conj = np.ones((n,n), dtype=bool)
+    conj = np.ones((n, n), dtype=bool)
     for label in labels:
-        iseq = label[:,np.newaxis] == label.flatten()
+        iseq = label[:, np.newaxis] == label.flatten()
         conj = np.logical_and(conj, iseq)
 
     # make into an RDM
@@ -89,7 +90,7 @@ def init_pRSA(n_perm, model_rdms):
             resid.append(res)
         model_resid.append(np.asarray(resid))
 
-    return {'model_mats':model_mats, 'model_resid':model_resid}
+    return {'model_mats': model_mats, 'model_resid': model_resid}
 
 
 def perm_partial(data_vec, model_mat, model_resid):
@@ -130,7 +131,7 @@ def call_pRSA(subj, mask, sl_rad, bcast_var):
     """
 
     # data representational dissimilarity vector
-    data = subj[0][mask,:].T
+    data = subj[0][mask, :].T
     data_vec = stats.rankdata(pdist(data, 'correlation'))
 
     # unpack global data
