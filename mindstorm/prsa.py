@@ -1,5 +1,6 @@
 """Display task searchlight analysis in brainiak."""
 
+import warnings
 import numpy as np
 import scipy.stats as stats
 import scipy.optimize as optim
@@ -24,6 +25,13 @@ def labels2rdm(labels):
 
 def perm_z(stat_perm):
     """Calculate a z-statistic from permutation results."""
+    if np.any(np.isnan(stat_perm) | np.isinf(stat_perm)):
+        warnings.warn('Invalid permutation statistic.', RuntimeWarning)
+        return np.nan
+    elif len(np.unique(stat_perm)) == 1:
+        warnings.warn('Permutation statistic does not vary.', RuntimeWarning)
+        return np.nan
+
     p = np.mean(stat_perm >= stat_perm[0])
     e = 1.0 / len(stat_perm)
     if p > (1 - e):
