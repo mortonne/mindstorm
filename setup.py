@@ -16,7 +16,7 @@ setuptools.setup(
     install_requires=[
         'numpy',
         'scipy'
-    ]
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
