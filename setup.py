@@ -13,6 +13,10 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/mortonne/mindstorm",
     packages=setuptools.find_packages(),
+    install_requires=[
+        'numpy',
+        'scipy'
+    ]
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
