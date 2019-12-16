@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="mindstorm",
-    version="0.0.1",
+    version="0.0.2",
     author="Neal Morton",
     author_email="mortonne@gmail.com",
     description="Advanced analysis of neuroimaging data",
