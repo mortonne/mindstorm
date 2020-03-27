@@ -1,7 +1,10 @@
 import setuptools
+import glob
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
+
+scripts = glob.glob('scripts/*.sh')
 
 setuptools.setup(
     name="mindstorm",
@@ -22,7 +25,5 @@ setuptools.setup(
         "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
         "Operating System :: OS Independent",
     ],
-    scripts=[
-        "scripts/zstat_randomise.sh"
-    ]
+    scripts=scripts
 )
