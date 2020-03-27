@@ -4,7 +4,7 @@ import glob
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-scripts = glob.glob('scripts/*.sh')
+scripts = glob.glob('scripts/*')
 
 setuptools.setup(
     name="mindstorm",
