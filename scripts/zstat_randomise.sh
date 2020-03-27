@@ -159,7 +159,6 @@ if [[ ! -f $zstat_cat || $overwrite = true ]]; then
     fslmerge -t "$zstat_cat" $files
 fi
 
-echo "Running randomise..."
 if [[ -n $incfiles ]]; then
     included_cat="$outdir/included_all.nii.gz"
     if [[ ! -f $included_cat || $overwrite = true ]]; then
@@ -170,11 +169,14 @@ if [[ -n $incfiles ]]; then
     # we'll include any voxels that are defined for anyone
     incprob="$outdir/included_prob.nii.gz"
     incmask="$outdir/included_tot.nii.gz"
-    fslmaths "$included_cat" -Tmean "$incprob"
-    fslmaths "$incprob" -thr .01 -bin "$incmask"
+    if [[ ! -f $incmask || $overwrite = true ]]; then
+        fslmaths "$included_cat" -Tmean "$incprob"
+        fslmaths "$incprob" -thr .01 -bin "$incmask"
+    fi
     mask="$incmask"
 fi
 
+echo "Running randomise..."
 flags=()
 if [ -n "$mask" ]; then
     flags+=("-m $mask")
