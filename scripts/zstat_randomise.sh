@@ -182,8 +182,7 @@ if [ -n "$mask" ]; then
     flags+=("-m $mask")
 fi
 
-if randomise -i "$zstat_cat" "${flags[@]}" -o "$outdir/zstat" \
-    -1 -n "$n_perm" -x --uncorrp; then
+if randomise -i "$zstat_cat" ${flags[*]} -o "$outdir/zstat" -1 -n "$n_perm" -x --uncorrp; then
     # if randomise worked, delete concatenated file to save space
     imrm "$zstat_cat"
 fi
