@@ -5,7 +5,7 @@ if [ $# -lt 2 ]; then
 Run group-level analysis of searchlight results.
 
 Usage: zstat_randomise.sh [-s studydir] [-n nperm] [-m mask] [-a anat]
-                          [-i interp] [-f filename] filepath subjids
+                          [-i interp] [-f filename] [-o] filepath subjids
 
 filepath
     Relative path to searchlight results. For example, if a participant's 
