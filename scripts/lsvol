@@ -1,52 +1,55 @@
 #!/bin/bash
+#
+# List image files with information about their dimensions and file size.
 
-if [ $# -lt 1 ]; then
+if [[ $# -lt 1 ]]; then
     inputs='.'
 else
-    inputs="$@"
+    inputs="$*"
 fi
 
 function printdims {
-    if [ $# -lt 3 ]; then
-	prefix=""
+    if [[ $# -lt 3 ]]; then
+        prefix=""
     else
-	prefix="$3"
+        prefix="$3"
     fi
 
     s=""
     for i in $(seq 1 4); do
-	val=$(echo "$1" | grep "^${prefix}dim${i}" | awk '{print $2}')
-	sval=$(printf "$2" $val)
-	if [ $i == 1 ]; then
-	    s="$sval"
-	else
-	    s="${s}x${sval}"
-	fi
+        val=$(echo "$1" | grep "^${prefix}dim${i}" | awk '{print $2}')
+        # shellcheck disable=SC2059
+        sval=$(printf "$2" "$val")
+        if [[ $i == 1 ]]; then
+            s="$sval"
+        else
+            s="${s}x${sval}"
+        fi
     done
     echo "$s"
 }
 
 function mysize {
-    hd="$(fslhd $1)"
+    hd="$(fslhd "$1")"
     echo "$(printdims "$hd" "%03d") $(printdims "$hd" "%.2f" pix)"
 }
 
 function fsize {
     sz=$(ls -lh $1 | awk '{print $5}')
-    printf '%4s' $sz
+    printf '%4s' "$sz"
 }
 
 for input in $inputs; do
-    if [ -d $input ]; then
-	count=$(ls -1S $input/*.nii.gz 2> /dev/null | wc -l)
-	if [ $count != 0 ]; then
-	    for file in $(ls -S $input/*.nii.gz); do
-		echo "$(mysize $file -s) $(fsize $file) $(basename $file)"
-	    done
-	fi
+    if [[ -d $input ]]; then
+        count="$(ls -1S $input/*.nii.gz 2> /dev/null | wc -l)"
+        if [[ $count != 0 ]]; then
+            for file in $(ls -S "$input"/*.nii.gz); do
+                echo "$(mysize "$file" -s) $(fsize "$file") $(basename "$file")"
+            done
+        fi
     else
-	if [ -f $input ]; then
-	    echo "$(mysize $input -s) $(fsize $input) $input"
-	fi
+        if [[ -f $input ]]; then
+            echo "$(mysize "$input" -s) $(fsize "$input") $input"
+        fi
     fi
 done
