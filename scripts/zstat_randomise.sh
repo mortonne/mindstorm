@@ -123,7 +123,7 @@ for subject in $(echo "$subjects" | tr ':' ' '); do
     zstat_std="$studydir/$subject/$filepath/zstat_std.nii.gz"
     if [[ ! -f $zstat_std || $overwrite = true ]]; then
         echo "transform_func2mni.sh ${flags[*]} $zstat_subj $zstat_std $subject"
-        transform_func2mni.sh "${flags[@]}" "$zstat_subj" "$zstat_std" "$subject"
+        transform_func2mni.sh ${flags[*]} "$zstat_subj" "$zstat_std" "$subject"
     else
         echo "$zstat_std exists."
     fi
@@ -135,7 +135,7 @@ for subject in $(echo "$subjects" | tr ':' ' '); do
         # standard space
         if [[ ! -f $included_std || $overwrite = true ]]; then
             echo "transform_func2mni.sh ${finc[*]} $included $included_std $subject"
-            transform_func2mni.sh "${finc[@]}" "$included" "$included_std" "$subject"
+            transform_func2mni.sh ${finc[*]} "$included" "$included_std" "$subject"
             echo "finished transform"
         fi
 
