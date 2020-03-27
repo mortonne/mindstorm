@@ -37,6 +37,9 @@ OPTIONS
     Searchlight results for each subjects are expected to be in:
     \$STUDYDIR/\$subject/\$filepath/FILENAME.nii.gz. Default is: zstat.
 
+-o OVERWRITE
+    If true, existing results will be overwritten. Default is: false.
+
 EOF
     exit 1
 fi
