@@ -1,0 +1,21 @@
+{
+    "language": "eng",
+    "license": "GPL-3.0+",
+    "title": "Mindstorm: Advanced neuroimaging analysis",
+    "upload_type": "software",
+    "creators": [
+        {
+            "orcid": "0000-0002-2631-2710",
+            "affiliation": "The University of Texas at Austin",
+            "name": "Neal W Morton"
+        }
+    ],
+    "keywords": [
+        "psychology",
+        "neuroscience",
+        "Python",
+        "neuroimaging",
+        "fMRI"
+    ],
+    "access_right": "open"
+}
