@@ -1,9 +1,11 @@
 [tool.poetry]
 name = "mindstorm"
 version = "0.2.0"
-description = "Advanced analysis of neuroimaging data"
+description = "Mindstorm: Advanced analysis of neuroimaging data"
+readme = "Readme.md"
 authors = ["Neal Morton <mortonne@gmail.com>"]
 license = "GPL-3.0-or-later"
+repository = "https://github.com/mortonne/mindstorm"
 
 [tool.poetry.dependencies]
 python = "^3.7"
