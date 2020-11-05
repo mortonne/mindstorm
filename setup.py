@@ -8,7 +8,7 @@ scripts = glob.glob('scripts/*')
 
 setuptools.setup(
     name="mindstorm",
-    version="0.2.0",
+    version="0.2.1",
     author="Neal Morton",
     author_email="mortonne@gmail.com",
     description="Advanced analysis of neuroimaging data",

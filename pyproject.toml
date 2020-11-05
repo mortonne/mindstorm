@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mindstorm"
-version = "0.2.0"
+version = "0.2.1"
 description = "Mindstorm: Advanced analysis of neuroimaging data"
 readme = "Readme.md"
 authors = ["Neal Morton <mortonne@gmail.com>"]
