@@ -23,6 +23,27 @@ def labels2rdm(labels):
     return mat
 
 
+def pair_and(x, y=None):
+    """Pairs where conditions are both true."""
+    if y is None:
+        y = x
+    return np.asarray(x)[:, None] & np.asarray(y)[:, None].T
+
+
+def pair_eq(x, y=None):
+    """Pairs where conditions are equal."""
+    if y is None:
+        y = x
+    return np.asarray(x)[:, None] == np.asarray(y)[:, None].T
+
+
+def pair_neq(x, y=None):
+    """Pairs where conditions are not equal."""
+    if y is None:
+        y = x
+    return np.asarray(x)[:, None] != np.asarray(y)[:, None].T
+
+
 def perm_z(stat_perm):
     """Calculate a z-statistic from permutation results."""
     if np.any(np.isnan(stat_perm) | np.isinf(stat_perm)):
