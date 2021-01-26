@@ -2,7 +2,7 @@
 name = "mindstorm"
 version = "0.3.0"
 description = "Mindstorm: Advanced analysis of neuroimaging data"
-readme = "Readme.md"
+readme = "README.md"
 authors = ["Neal Morton <mortonne@gmail.com>"]
 license = "GPL-3.0-or-later"
 repository = "https://github.com/mortonne/mindstorm"
