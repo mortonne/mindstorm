@@ -106,11 +106,7 @@ def image_scatter(x, y, images, ax=None, zoom=1.0, frameon=False):
 
     artists = []
     x, y = np.atleast_1d(x, y)
-    for (
-        x0,
-        y0,
-        im,
-    ) in zip(x, y, images):
+    for (x0, y0, im) in zip(x, y, images):
         im0 = OffsetImage(im, zoom=zoom)
         ab = AnnotationBbox(im0, (x0, y0), xycoords="data", frameon=frameon, pad=0)
         artists.append(ax.add_artist(ab))
