@@ -17,7 +17,7 @@ def labels2rdm(labels):
         conj = np.logical_and(conj, iseq)
 
     # make into an RDM
-    mat = 1 - np.asarray(conj, 'float')
+    mat = 1 - np.asarray(conj, "float")
 
     mat[np.diag_indices(mat.shape[0])] = 0
     return mat
@@ -47,10 +47,10 @@ def pair_neq(x, y=None):
 def perm_z(stat_perm):
     """Calculate a z-statistic from permutation results."""
     if np.any(np.isnan(stat_perm) | np.isinf(stat_perm)):
-        warnings.warn('Invalid permutation statistic.', RuntimeWarning)
+        warnings.warn("Invalid permutation statistic.", RuntimeWarning)
         return np.nan
     elif len(np.unique(stat_perm)) == 1:
-        warnings.warn('Permutation statistic does not vary.', RuntimeWarning)
+        warnings.warn("Permutation statistic does not vary.", RuntimeWarning)
         return np.nan
 
     p = np.mean(stat_perm >= stat_perm[0])
@@ -72,7 +72,7 @@ def init_pRSA(n_perm, model_rdms):
         Representational dissimilarity matrix for each of a set of
         models to test. Each matrix should be [trials x trials],
         giving the dissimilarity between trials predicted by that model.
-        
+
     Returns
     -------
     rsa_def : dict
@@ -90,13 +90,13 @@ def init_pRSA(n_perm, model_rdms):
     n_item = model_rdms[0].shape[0]
 
     # generate random indices to use across all models
-    rand_ind = [np.random.choice(np.arange(n_item), n_item, False)
-                for i in range(n_perm)]
+    rand_ind = [
+        np.random.choice(np.arange(n_item), n_item, False) for i in range(n_perm)
+    ]
     rand_ind.insert(0, np.arange(n_item))
 
     # put models in vector format and rank-order them
-    model_vecs = np.asarray([stats.rankdata(squareform(rdm))
-                             for rdm in model_rdms]).T
+    model_vecs = np.asarray([stats.rankdata(squareform(rdm)) for rdm in model_rdms]).T
 
     # make control design matrices for regression
     model_mats = []
@@ -119,7 +119,7 @@ def init_pRSA(n_perm, model_rdms):
             resid.append(res)
         model_resid.append(np.asarray(resid))
 
-    return {'model_mats': model_mats, 'model_resid': model_resid}
+    return {"model_mats": model_mats, "model_resid": model_resid}
 
 
 def perm_partial(data_vec, model_mat, model_resid):
@@ -131,9 +131,9 @@ def perm_partial(data_vec, model_mat, model_resid):
 
     # correlate with the residualized (random) model
     xmat = data_resid.reshape((1, len(data_resid)))
-    stat = 1 - cdist(xmat, model_resid, 'correlation').squeeze()
+    stat = 1 - cdist(xmat, model_resid, "correlation").squeeze()
     if np.any(np.isnan(stat)):
-        raise ValueError('statistic is undefined.')
+        raise ValueError("statistic is undefined.")
     return stat
 
 
@@ -161,11 +161,11 @@ def call_pRSA(subj, mask, sl_rad, bcast_var):
 
     # data representational dissimilarity vector
     data = subj[0][mask, :].T
-    data_vec = stats.rankdata(pdist(data, 'correlation'))
+    data_vec = stats.rankdata(pdist(data, "correlation"))
 
     # unpack global data
-    model_mats = bcast_var['model_mats']
-    model_resid = bcast_var['model_resid']
+    model_mats = bcast_var["model_mats"]
+    model_resid = bcast_var["model_resid"]
 
     # calculate z-statistic for each partial correlation
     stat_all = []
