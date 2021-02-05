@@ -68,10 +68,12 @@ def init_pRSA(n_perm, model_rdms, rank=True):
     n_perm : int
         Number of model permutations to test to establish a null
         distribution for each partial correlation.
+
     model_rdms : list of numpy arrays
         Representational dissimilarity matrix for each of a set of
         models to test. Each matrix should be [trials x trials],
         giving the dissimilarity between trials predicted by that model.
+
     rank : bool
         If true, RDMs will be rank transformed.
 
@@ -154,12 +156,16 @@ def call_pRSA(subj, mask, sl_rad, bcast_var, rank=True):
     subj : list of numpy arrays
         Each element contains a 4D array of functional data for one
         subject.
+
     mask : numpy array
         A 3D array with the current mask for the searchlight.
+
     sl_rad : int
         Searchlight radius.
+
     bcast_var : dict
         The dict created by init_pRSA.
+
     rank : bool
         If true, rank transform data.
 
