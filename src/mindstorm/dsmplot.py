@@ -18,16 +18,19 @@ def plot_pattern(mat, ax=None):
     return h
 
 
-def plot_dsm(dsm, rank=False, prange=(1, 99), vlim=None, color="viridis", ax=None):
+def plot_dsm(
+        dsm, rank=False, prange=(1, 99), vlim=None, color="viridis", checks=True,
+        ax=None
+):
     """Plot pairwise dissimilarity values as a matrix."""
     if ax is None:
         ax = plt.gca()
 
     if rank:
-        dsm = sd.squareform(stats.rankdata(sd.squareform(dsm)))
+        dsm = sd.squareform(stats.rankdata(sd.squareform(dsm, checks=checks)))
 
     if vlim is None:
-        vlim = np.percentile(sd.squareform(dsm), prange)
+        vlim = np.percentile(sd.squareform(dsm, checks=checks), prange)
 
     h = ax.pcolor(dsm, vmin=vlim[0], vmax=vlim[1], cmap=color)
     ax.set_aspect(1)
