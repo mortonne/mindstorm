@@ -60,7 +60,7 @@ def perm_z(stat_perm):
     return stats.norm.ppf(1 - p)
 
 
-def init_pRSA(n_perm, model_rdms):
+def init_pRSA(n_perm, model_rdms, rank=True):
     """Prepare model RDMs for partial RSA.
 
     Parameters
@@ -72,6 +72,8 @@ def init_pRSA(n_perm, model_rdms):
         Representational dissimilarity matrix for each of a set of
         models to test. Each matrix should be [trials x trials],
         giving the dissimilarity between trials predicted by that model.
+    rank : bool
+        If true, RDMs will be rank transformed.
 
     Returns
     -------
@@ -96,7 +98,12 @@ def init_pRSA(n_perm, model_rdms):
     rand_ind.insert(0, np.arange(n_item))
 
     # put models in vector format and rank-order them
-    model_vecs = np.asarray([stats.rankdata(squareform(rdm)) for rdm in model_rdms]).T
+    if rank:
+        model_vecs = np.asarray(
+            [stats.rankdata(squareform(rdm)) for rdm in model_rdms]
+        ).T
+    else:
+        model_vecs = np.asarray([squareform(rdm) for rdm in model_rdms]).T
 
     # make control design matrices for regression
     model_mats = []
@@ -113,7 +120,9 @@ def init_pRSA(n_perm, model_rdms):
         resid = []
         for ind in rand_ind:
             rand_rdm = model_rdms[i][np.ix_(ind, ind)]
-            rand_model = stats.rankdata(squareform(rand_rdm))
+            rand_model = squareform(rand_rdm)
+            if rank:
+                rand_model = stats.rankdata(rand_model)
             beta = optim.nnls(model_mats[i], rand_model)[0]
             res = rand_model - model_mats[i].dot(beta)
             resid.append(res)
@@ -137,7 +146,7 @@ def perm_partial(data_vec, model_mat, model_resid):
     return stat
 
 
-def call_pRSA(subj, mask, sl_rad, bcast_var):
+def call_pRSA(subj, mask, sl_rad, bcast_var, rank=True):
     """Function to pass when running partial RSA searchlight.
 
     Parameters
@@ -151,6 +160,8 @@ def call_pRSA(subj, mask, sl_rad, bcast_var):
         Searchlight radius.
     bcast_var : dict
         The dict created by init_pRSA.
+    rank : bool
+        If true, rank transform data.
 
     Returns
     -------
@@ -161,7 +172,9 @@ def call_pRSA(subj, mask, sl_rad, bcast_var):
 
     # data representational dissimilarity vector
     data = subj[0][mask, :].T
-    data_vec = stats.rankdata(pdist(data, "correlation"))
+    data_vec = pdist(data, "correlation")
+    if rank:
+        data_vec = stats.rankdata(data_vec)
 
     # unpack global data
     model_mats = bcast_var["model_mats"]
