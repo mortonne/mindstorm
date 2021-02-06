@@ -2,6 +2,7 @@
 
 import warnings
 import numpy as np
+import pandas as pd
 import scipy.stats as stats
 import scipy.optimize as optim
 from scipy.spatial.distance import pdist, cdist, squareform
@@ -193,3 +194,58 @@ def call_pRSA(subj, mask, sl_rad, bcast_var, rank=True):
         stat_all.append(perm_z(stat))
 
     return tuple(stat_all)
+
+
+def sign_perm(mat, n_perm, beta):
+    """Test for significantly positive values with FDR correction."""
+    # generate random sign flips
+    n_samp, n_test = mat.shape
+    rand_sign = np.hstack(
+        (np.ones((n_samp, 1)), np.random.choice([-1, 1], (n_samp, n_perm)))
+    )
+
+    # apply random sign to all conditions
+    mat_perm = mat[:, :, None] * rand_sign[:, None, :]
+
+    # ttest vs zero for permuted and actual stats
+    perm_t, perm_p = stats.ttest_1samp(mat_perm, 0, axis=0)
+    t, p = stats.ttest_1samp(mat_perm[:, :, 0], 0, axis=0)
+
+    # convert to right-tailed test
+    perm_p /= 2
+    perm_p[perm_t < 0] = 1 - perm_p[perm_t < 0]
+    p /= 2
+    p[t < 0] = 1 - p[t < 0]
+
+    # q-value at each actual p-value
+    ERstar = np.zeros(p.shape)
+    r = np.zeros(p.shape)
+    rstarb = np.zeros(p.shape)
+    m = n_test
+    q = np.zeros(p.shape)
+    for i, a in enumerate(p):
+        # expected value of number of rejections under the null
+        Rstar = np.sum(perm_p <= a, 0)
+        ERstar[i] = np.mean(Rstar)
+
+        # 1 - beta quantile of Rstar
+        rstarb[i] = np.quantile(Rstar, 1 - beta)
+
+        # number of actual rejections
+        r[i] = np.sum(p <= a)
+
+        # FDR local estimator
+        if (r[i] - rstarb[i]) >= (a * m):
+            q[i] = ERstar[i] / (ERstar[i] + r[i] - (a * m))
+        else:
+            q[i] = np.mean(Rstar >= 1)
+
+    # package results
+    std = np.std(mat, axis=0, ddof=1)
+    mean = np.mean(mat, axis=0)
+    sem = stats.sem(mat, axis=0)
+    df = pd.DataFrame({
+        't': t, 'p': p, 'q': q, 'ERstar': ERstar, 'rstarb': rstarb, 'r': r,
+        'mean': mean, 'std': std, 'sem': sem, 'd': np.abs(mean) / std
+    })
+    return df
