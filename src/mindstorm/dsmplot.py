@@ -40,20 +40,21 @@ def plot_dsm(
     return h
 
 
-def embed_mds(dsm):
+def embed(dsm, embedding=None):
     """Calculate a two-dimensional MDS embedding for a dissimilarity matrix."""
-    embedding = manifold.MDS(n_components=2, dissimilarity="precomputed")
+    if embedding is None:
+        embedding = manifold.MDS(n_components=2, dissimilarity="precomputed")
     X = embedding.fit_transform(dsm)
     x, y = X.T
     return x, y
 
 
-def embed_mds_align(dsm_set, reference=0):
+def embed_align(dsm_set, reference=0, embedding=None):
     """Calculate embedding for dissmilarity matrices and align them."""
-    embed = [np.vstack(embed_mds(dsm)).T for dsm in dsm_set]
-    ref_embed = embed[reference]
+    embed_set = [np.vstack(embed(dsm, embedding)).T for dsm in dsm_set]
+    ref_embed = embed_set[reference]
     aligned = [None] * len(dsm_set)
-    for i, mat in enumerate(embed):
+    for i, mat in enumerate(embed_set):
         if i == reference:
             continue
         pro1, pro2, disparity = spatial.procrustes(ref_embed, mat)
@@ -118,7 +119,7 @@ def image_scatter(x, y, images, ax=None, zoom=1.0, frameon=False):
     return artists
 
 
-def plot_mds(dsm, images, ind=None, embedding="mds", zoom=1.0, ax=None):
+def plot_mds(dsm, images, ind=None, embedding=None, zoom=1.0, ax=None):
     """Plot multidimensional scaling of a dissimilarity matrix."""
     if ind is not None:
         if embedding == "precomputed":
@@ -129,19 +130,19 @@ def plot_mds(dsm, images, ind=None, embedding="mds", zoom=1.0, ax=None):
 
     if embedding == "precomputed":
         x, y = dsm
-    elif embedding == "mds":
-        x, y = embed_mds(dsm)
     else:
-        raise ValueError(f"Invalid embedding type: {embedding}")
+        x, y = embed(dsm, embedding)
 
     artists = image_scatter(y, x, images, ax=ax, zoom=zoom)
     return artists
 
 
-def plot_mds_aligned(model_set, model_names, images, fig=None, col_wrap=3):
+def plot_mds_aligned(
+    model_set, model_names, images, embedding=None, fig=None, col_wrap=3
+):
     """Plot MDS aligned over multiple models."""
     mset = [model_set[name] for name in model_names]
-    aligned = embed_mds_align(mset)
+    aligned = embed_align(mset, embedding)
 
     if fig is None:
         fig = plt.figure(figsize=(14, 7))
@@ -187,11 +188,12 @@ def plot_rep_as_dsm(
 
 
 def plot_rep_as_mds(
-    data=None, distance="correlation", ax=None, images=None, color=None, zoom=1
+    data=None, distance="correlation", ax=None, images=None, color=None, zoom=1,
+    embedding=None
 ):
     """Run dimensionality reduction and plot images."""
     mat = data.filter(like="dim").to_numpy()
     dsm = sd.squareform(sd.pdist(mat, distance))
-    x, y = embed_mds(dsm)
+    x, y = embed(dsm, embedding)
     im_list = [images[stim] for stim in data.stim.to_list()]
     image_scatter(x, y, im_list, ax=ax, zoom=zoom)
