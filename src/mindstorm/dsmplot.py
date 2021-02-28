@@ -133,7 +133,11 @@ def plot_mds(dsm, images, ind=None, embedding=None, zoom=1.0, ax=None):
     else:
         x, y = embed(dsm, embedding)
 
-    artists = image_scatter(y, x, images, ax=ax, zoom=zoom)
+    if np.ptp(x) >= np.ptp(y):
+        d1, d2 = x, y
+    else:
+        d1, d2 = y, x
+    artists = image_scatter(d1, d2, images, ax=ax, zoom=zoom)
     return artists
 
 
