@@ -19,7 +19,7 @@ def plot_pattern(mat, ax=None):
 
 
 def plot_dsm(
-        dsm, rank=False, prange=(1, 99), vlim=None, color="viridis", checks=True,
+        dsm, rank=False, prange=(1, 99), vlim=None, cmap="viridis", checks=True,
         ax=None
 ):
     """Plot pairwise dissimilarity values as a matrix."""
@@ -32,7 +32,7 @@ def plot_dsm(
     if vlim is None:
         vlim = np.percentile(sd.squareform(dsm, checks=checks), prange)
 
-    h = ax.pcolor(dsm, vmin=vlim[0], vmax=vlim[1], cmap=color)
+    h = ax.pcolor(dsm, vmin=vlim[0], vmax=vlim[1], cmap=cmap)
     ax.set_aspect(1)
     if not ax.yaxis_inverted():
         ax.invert_yaxis()
