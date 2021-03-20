@@ -183,12 +183,12 @@ def plot_models_dsm(model_dsm, fig=None, prange=(1, 99), col_wrap=None):
 
 
 def plot_rep_as_dsm(
-    data=None, distance="correlation", ax=None, prange=(1, 99), color=None
+    data=None, distance="correlation", ax=None, prange=(1, 99), color=None, **plot_kws
 ):
     """Convert representation to dissimilarity and plot."""
     mat = data.filter(like="dim").to_numpy()
     dsm = sd.squareform(sd.pdist(mat, distance))
-    plot_dsm(dsm, ax=ax, prange=prange)
+    plot_dsm(dsm, ax=ax, prange=prange, **plot_kws)
 
 
 def plot_rep_as_mds(
