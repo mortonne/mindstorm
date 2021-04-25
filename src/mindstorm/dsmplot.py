@@ -11,6 +11,7 @@ from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 
 
 def plot_pattern(mat, ax=None):
+    """Plot a matrix as a simple grayscale image with no axes."""
     if ax is None:
         ax = plt.gca()
     h = ax.matshow(mat, cmap="gray")
