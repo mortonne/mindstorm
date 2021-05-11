@@ -88,13 +88,9 @@ def plot_swarm_bar(
         'clip_on': False,
     }
     if point_kind == 'swarm':
-        sns.swarmplot(
-            data=data, x=x, y=y, hue=hue, ax=ax, **point_prop,
-        )
+        sns.swarmplot(data=data, x=x, y=y, hue=hue, ax=ax, **point_prop)
     elif point_kind == 'strip':
-        sns.stripplot(
-            data=data, x=x, y=y, hue=hue, ax=ax, **point_prop,
-        )
+        sns.stripplot(data=data, x=x, y=y, hue=hue, ax=ax, **point_prop)
     else:
         raise ValueError(f'Invalid point plot kind: {point_kind}')
 
