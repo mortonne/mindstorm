@@ -13,11 +13,12 @@ def plot_swarm_bar(
     dark=None,
     light=None,
     dodge=False,
-    capsize=0.425,
     point_kind='swarm',
     legend=True,
     width=None,
     ax=None,
+    point_kws={},
+    bar_kws={},
 ):
     """
     Make a bar plot with individual points and error bars.
@@ -46,9 +47,6 @@ def plot_swarm_bar(
         If true, hues will be plotted at different x-values. Used to
         create grouped bar plots.
 
-    capsize : float, optional
-        Size of the error bar caps.
-
     point_kind : {'swarm', 'strip'}, optional
         Method for plotting the individual data points in each bin.
 
@@ -61,6 +59,13 @@ def plot_swarm_bar(
     ax : matplotlib.axes.Axes, optional
         Axes object to draw the plot onto; if not specified, will use
         the current Axes.
+
+    point_kws : dict, optional
+        Options when plotting points using seaborn.swarmplot or
+        seaborn.stripplot.
+
+    bar_kws : dict, optional
+        Options when plotting bars using seaborn.barplot.
 
     Returns
     -------
@@ -87,6 +92,7 @@ def plot_swarm_bar(
         'palette': dark,
         'clip_on': False,
     }
+    point_prop.update(point_kws)
     if point_kind == 'swarm':
         sns.swarmplot(data=data, x=x, y=y, hue=hue, ax=ax, **point_prop)
     elif point_kind == 'strip':
@@ -95,21 +101,18 @@ def plot_swarm_bar(
         raise ValueError(f'Invalid point plot kind: {point_kind}')
 
     # plot error bars for the mean
-    sns.barplot(
-        data=data,
-        x=x,
-        y=y,
-        hue=hue,
-        ax=ax,
-        dodge=dodge,
-        color='k',
-        palette=light,
-        errwidth=0.8,
-        capsize=capsize,
-        edgecolor='k',
-        linewidth=0.75,
-        errcolor='k',
-    )
+    bar_prop = {
+        'color': 'k',
+        'errwidth': 0.8,
+        'capsize': 0.425,
+        'edgecolor': 'k',
+        'linewidth': 0.75,
+        'errcolor': 'k',
+        'dodge': dodge,
+        'palette': light,
+    }
+    bar_prop.update(bar_kws)
+    sns.barplot(data=data, x=x, y=y, hue=hue, ax=ax, **bar_prop)
 
     # remove overall xlabel and increase size of x-tick labels
     ax.set_xlabel('')
