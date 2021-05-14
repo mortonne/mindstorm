@@ -148,3 +148,30 @@ def plot_swarm_bar(
             # refresh the legend to remove the swarm points
             ax.legend()
     return ax
+
+
+def plot_sig(x, y, spacing, line_kws={}, marker_kws={}, ax=None):
+    """Plot brackets with a significance indicator."""
+    if ax is None:
+        ax = plt.gca()
+
+    # bar centers
+    x1, x2 = x
+
+    # largest y-values
+    y1, y2 = y
+
+    # line and annotation y-values
+    yl1 = max(y1, y2) + spacing
+    yl2 = yl1 + spacing
+    yl3 = yl2 + spacing
+
+    # brackets connecting bars
+    line_prop = {'linewidth': 0.75, 'color': 'k'}
+    line_prop.update(line_kws)
+    ax.plot([x1, x1, x2, x2], [yl1, yl2, yl2, yl1], **line_prop)
+
+    # significance marker
+    marker_prop = {'marker': (5, 2, 0), 'markersize': 8, 'color': 'k'}
+    marker_prop.update(marker_kws)
+    ax.plot((x1 + x2) / 2, yl3, **marker_prop)
