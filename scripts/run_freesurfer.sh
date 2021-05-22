@@ -78,7 +78,7 @@ fi
 
 # delete existing freesurfer results
 if [[ -d ${subjdir}/anatomy/$outname ]]; then
-    cd "$subjdir/anatomy" && exit 1
+    cd "$subjdir/anatomy" || exit 1
     rm -rf "$outname"
 fi
 
