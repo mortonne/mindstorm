@@ -69,7 +69,7 @@ def main(data_dir, dry_run=False):
         bold_files = layout.get(
             subject=subject, datatype='func', extension='.nii.gz', suffix='bold'
         )
-        n = np.array(bold_files.shape)
+        n = np.zeros(len(bold_files))
         for i, bold_file in enumerate(bold_files):
             img = nib.load(bold_file)
             n[i] = img.header.get_data_size()[3]
