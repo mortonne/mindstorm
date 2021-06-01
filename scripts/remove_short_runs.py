@@ -72,7 +72,7 @@ def main(data_dir, dry_run=False):
         n = np.zeros(len(bold_files))
         for i, bold_file in enumerate(bold_files):
             img = nib.load(bold_file)
-            n[i] = img.header.get_data_size()[3]
+            n[i] = img.header.get_data_shape()[3]
 
         max_n = np.max(n)
         if np.all(n == max_n):
