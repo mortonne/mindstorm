@@ -75,12 +75,12 @@ fslmaths $funcdata -mas mask prefiltered_func_data_thresh
 funcdata=prefiltered_func_data_thresh
 
 # spatial filtering
-smoothsigma=$(python -c "print $smooth/2.355")
+smoothsigma=$(python3 -c "print(${smooth} / 2.355)")
 
 # the 0.1 percentile within mask is similar to using the 2nd
 # percentile over the whole image, but better controlled
 int1=$(fslstats $funcdata -k mask -p 0.1)
-susan_int=$(python -c "print ($median_intensity - $int1) * 0.75")
+susan_int=$(python3 -c "print((${median_intensity} - ${int1}) * 0.75)")
 if [[ $verbose == 1 ]]; then
     echo "int1: $int1"
     echo "median: $median_intensity"
