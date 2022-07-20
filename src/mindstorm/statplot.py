@@ -5,6 +5,33 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
+def add_swarm_bar_sig(ax, sig_ind, y_offset=None):
+    """Add significance stats to swarm bar plot."""
+    # center of each bar in left/right order
+    bx = np.array(sorted([p.get_x() + (p.get_width() / 2) for p in ax.patches]))
+
+    # highest point in each point plot in left/right order
+    collections = [c for c in ax.collections if c.get_offsets().shape[0] > 1]
+    cy = np.array([np.max(c.get_offsets()[:, 1]) for c in collections])
+    cx = np.array([np.mean(c.get_offsets()[:, 0]) for c in collections])
+    cy = cy[np.argsort(cx)]
+
+    # define y point relative to the highest point
+    if y_offset is None:
+        y_lim = ax.get_ylim()
+        y_offset = (y_lim[1] - y_lim[0]) * .15
+
+    # plot significance markers
+    ax.plot(
+        bx[sig_ind],
+        cy[sig_ind] + y_offset,
+        markersize=8,
+        color='k',
+        linestyle='',
+        marker=(5, 2, 0),
+    )
+
+
 def plot_swarm_bar(
     data=None,
     x=None,
@@ -16,6 +43,7 @@ def plot_swarm_bar(
     point_kind='swarm',
     legend=True,
     width=None,
+    sig_ind=None,
     ax=None,
     point_kws={},
     bar_kws={},
@@ -55,6 +83,9 @@ def plot_swarm_bar(
 
     width : float, optional
         Width of the bars.
+
+    sig_ind : list of int, optional
+        Indices of bars (from left to right) to label as significant.
 
     ax : matplotlib.axes.Axes, optional
         Axes object to draw the plot onto; if not specified, will use
@@ -147,6 +178,10 @@ def plot_swarm_bar(
         if hue is not None and legend:
             # refresh the legend to remove the swarm points
             ax.legend()
+
+    # add significance markers
+    if sig_ind is not None:
+        add_swarm_bar_sig(ax, sig_ind)
     return ax
 
 
