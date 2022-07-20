@@ -119,7 +119,7 @@ def plot_swarm_bar(
     ax.tick_params(axis='x', labelsize='large')
 
     # fix ordering of plot elements
-    plt.setp(ax.lines, zorder=100, linewidth=1.25, label=None)
+    plt.setp(ax.lines, zorder=100, linewidth=1.25, label=None, clip_on=False)
     plt.setp(ax.collections, zorder=100, label=None)
 
     # modify the width of the bar plot
