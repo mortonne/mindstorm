@@ -47,6 +47,7 @@ def plot_swarm_bar(
     ax=None,
     point_kws={},
     bar_kws={},
+    **kwargs,
 ):
     """
     Make a bar plot with individual points and error bars.
@@ -125,9 +126,9 @@ def plot_swarm_bar(
     }
     point_prop.update(point_kws)
     if point_kind == 'swarm':
-        sns.swarmplot(data=data, x=x, y=y, hue=hue, ax=ax, **point_prop)
+        sns.swarmplot(data=data, x=x, y=y, hue=hue, ax=ax, **point_prop, **kwargs)
     elif point_kind == 'strip':
-        sns.stripplot(data=data, x=x, y=y, hue=hue, ax=ax, **point_prop)
+        sns.stripplot(data=data, x=x, y=y, hue=hue, ax=ax, **point_prop, **kwargs)
     else:
         raise ValueError(f'Invalid point plot kind: {point_kind}')
 
@@ -143,7 +144,7 @@ def plot_swarm_bar(
         'palette': light,
     }
     bar_prop.update(bar_kws)
-    sns.barplot(data=data, x=x, y=y, hue=hue, ax=ax, **bar_prop)
+    sns.barplot(data=data, x=x, y=y, hue=hue, ax=ax, **bar_prop, **kwargs)
 
     # remove overall xlabel and increase size of x-tick labels
     ax.set_xlabel('')
