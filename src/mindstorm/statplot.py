@@ -44,6 +44,46 @@ def add_swarm_bar_sig(ax, sig_ind, y_offset=None):
     )
 
 
+def plot_sig(x, y, spacing, line_kws={}, marker_kws={}, ax=None):
+    """Plot brackets with a significance indicator."""
+    if ax is None:
+        ax = plt.gca()
+
+    # bar centers
+    x1, x2 = x
+
+    # largest y-values
+    y1, y2 = y
+
+    # line and annotation y-values
+    yl1 = max(y1, y2) + spacing
+    yl2 = yl1 + spacing
+    yl3 = yl2 + spacing
+
+    # brackets connecting bars
+    line_prop = {'linewidth': 0.75, 'color': 'k'}
+    line_prop.update(line_kws)
+    ax.plot([x1, x1, x2, x2], [yl1, yl2, yl2, yl1], **line_prop)
+
+    # significance marker
+    marker_prop = {'marker': (5, 2, 0), 'markersize': 8, 'color': 'k'}
+    marker_prop.update(marker_kws)
+    ax.plot((x1 + x2) / 2, yl3, **marker_prop)
+
+
+def add_swarm_bar_sig_diff(ax, sig_ind_pairs, y_offset=None, **kwargs):
+    """Add significant comparison markers to swarm bar plot."""
+    bx = get_bar_x(ax)
+    cy = get_point_max_y(ax)
+
+    if y_offset is None:
+        y_lim = ax.get_ylim()
+        y_offset = (y_lim[1] - y_lim[0]) * .05
+
+    for ind in sig_ind_pairs:
+        plot_sig(bx[ind], cy[ind], y_offset, ax=ax, **kwargs)
+
+
 def plot_swarm_bar(
     data=None,
     x=None,
@@ -196,30 +236,3 @@ def plot_swarm_bar(
     if sig_ind is not None:
         add_swarm_bar_sig(ax, sig_ind)
     return ax
-
-
-def plot_sig(x, y, spacing, line_kws={}, marker_kws={}, ax=None):
-    """Plot brackets with a significance indicator."""
-    if ax is None:
-        ax = plt.gca()
-
-    # bar centers
-    x1, x2 = x
-
-    # largest y-values
-    y1, y2 = y
-
-    # line and annotation y-values
-    yl1 = max(y1, y2) + spacing
-    yl2 = yl1 + spacing
-    yl3 = yl2 + spacing
-
-    # brackets connecting bars
-    line_prop = {'linewidth': 0.75, 'color': 'k'}
-    line_prop.update(line_kws)
-    ax.plot([x1, x1, x2, x2], [yl1, yl2, yl2, yl1], **line_prop)
-
-    # significance marker
-    marker_prop = {'marker': (5, 2, 0), 'markersize': 8, 'color': 'k'}
-    marker_prop.update(marker_kws)
-    ax.plot((x1 + x2) / 2, yl3, **marker_prop)
