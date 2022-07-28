@@ -141,7 +141,7 @@ def plot_swarm_bar(
     sig_ind : list of int, optional
         Indices of bars (from left to right) to label as significant.
 
-    sig_ind : list of list of int, optional
+    sig_diff_ind : list of list of int, optional
         A list of pairs (given as indices of bars from left to right)
         to mark as significant comparisons.
 
