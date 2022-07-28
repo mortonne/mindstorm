@@ -14,8 +14,8 @@ def get_bar_x(ax):
 def get_point_max_y(ax):
     """Get highest point in each bin."""
     collections = [c for c in ax.collections if c.get_offsets().shape[0] > 1]
-    y = np.array([np.max(c.get_offsets()[:, 1]) for c in collections])
-    x = np.array([np.mean(c.get_offsets()[:, 0]) for c in collections])
+    y = np.array([np.nanmax(c.get_offsets()[:, 1]) for c in collections])
+    x = np.array([np.nanmean(c.get_offsets()[:, 0]) for c in collections])
     y = y[np.argsort(x)]
     return y
 
