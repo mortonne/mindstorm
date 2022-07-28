@@ -5,16 +5,28 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
+def get_bar_x(ax):
+    """Get bar centers."""
+    x = np.array(sorted([p.get_x() + (p.get_width() / 2) for p in ax.patches]))
+    return x
+
+
+def get_point_max_y(ax):
+    """Get highest point in each bin."""
+    collections = [c for c in ax.collections if c.get_offsets().shape[0] > 1]
+    y = np.array([np.max(c.get_offsets()[:, 1]) for c in collections])
+    x = np.array([np.mean(c.get_offsets()[:, 0]) for c in collections])
+    y = cy[np.argsort(x)]
+    return y
+
+
 def add_swarm_bar_sig(ax, sig_ind, y_offset=None):
     """Add significance stats to swarm bar plot."""
     # center of each bar in left/right order
-    bx = np.array(sorted([p.get_x() + (p.get_width() / 2) for p in ax.patches]))
+    bx = get_bar_x(ax)
 
     # highest point in each point plot in left/right order
-    collections = [c for c in ax.collections if c.get_offsets().shape[0] > 1]
-    cy = np.array([np.max(c.get_offsets()[:, 1]) for c in collections])
-    cx = np.array([np.mean(c.get_offsets()[:, 0]) for c in collections])
-    cy = cy[np.argsort(cx)]
+    cy = get_point_max_y(ax)
 
     # define y point relative to the highest point
     if y_offset is None:
