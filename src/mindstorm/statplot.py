@@ -96,6 +96,7 @@ def plot_swarm_bar(
     legend=True,
     width=None,
     sig_ind=None,
+    sig_diff_ind=None,
     ax=None,
     point_kws={},
     bar_kws={},
@@ -139,6 +140,10 @@ def plot_swarm_bar(
 
     sig_ind : list of int, optional
         Indices of bars (from left to right) to label as significant.
+
+    sig_ind : list of list of int, optional
+        A list of pairs (given as indices of bars from left to right)
+        to mark as significant comparisons.
 
     ax : matplotlib.axes.Axes, optional
         Axes object to draw the plot onto; if not specified, will use
@@ -235,4 +240,6 @@ def plot_swarm_bar(
     # add significance markers
     if sig_ind is not None:
         add_swarm_bar_sig(ax, sig_ind)
+    if sig_diff_ind is not None:
+        add_swarm_bar_sig_diff(ax, sig_diff_ind)
     return ax
