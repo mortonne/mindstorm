@@ -15,7 +15,20 @@ classifiers = [
     "Operating System :: OS Independent"
 ]
 urls = {project = "https://github.com/mortonne/mindstorm"}
-dependencies = ["numpy", "scipy", "pandas", "seaborn", "pybids", "nibabel"]
+dependencies = [
+    "numpy",
+    "scipy",
+    "pandas",
+    "seaborn",
+    "pybids",
+    "nibabel",
+    "nilearn",
+    "scikit-learn",
+    "click",
+]
+
+[project.scripts]
+betaseries = "mindstorm.glm:betaseries"
 
 [build-system]
 requires = ["setuptools", "wheel"]
