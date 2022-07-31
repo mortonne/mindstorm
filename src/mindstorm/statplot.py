@@ -31,7 +31,7 @@ def add_swarm_bar_sig(ax, sig_ind, y_offset=None):
     # define y point relative to the highest point
     if y_offset is None:
         y_lim = ax.get_ylim()
-        y_offset = (y_lim[1] - y_lim[0]) * .15
+        y_offset = (y_lim[1] - y_lim[0]) * .1
 
     # plot significance markers
     ax.plot(
@@ -57,7 +57,7 @@ def plot_sig(x, y, spacing, line_kws={}, marker_kws={}, ax=None):
 
     # line and annotation y-values
     yl1 = max(y1, y2) + spacing
-    yl2 = yl1 + spacing
+    yl2 = yl1 + spacing * .8
     yl3 = yl2 + spacing
 
     # brackets connecting bars
