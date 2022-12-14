@@ -217,10 +217,11 @@ def run_betaseries(
 @click.argument("bold_file", type=click.Path(exists=True))
 @click.argument("tr", type=float)
 @click.argument("events_file", type=click.Path(exists=True))
+@click.argument("events_id", type=str)
 @click.argument("mask_file", type=click.Path(exists=True))
 @click.argument("confound_file", type=click.Path(exists=True))
 @click.argument("betaseries_file", type=click.Path())
-@click.option("--resid_file", help="File to save residuals", type=click.Path())
+@click.option("--events-category", type=str, help="Field with event category")
 @click.option("--hp-filter", help="Highpass filter in Hz", type=float)
 @click.option("--smooth", help="Smoothing kernel FWHM", type=float)
 @click.option("--confound-measures", help="List of confound measures to include")
@@ -230,10 +231,11 @@ def run_betaseries(
 def betaseries(
     bold_file,
     events_file,
+    events_id,
     mask_file,
     confound_file,
     betaseries_file,
-    resid_file,
+    events_category,
     hp_filter,
     smooth,
     confound_measures,
@@ -247,5 +249,10 @@ def betaseries(
         conf_mat = conf[confound_measures]
     elif confound_measures_file is not None:
         # load from file and filter from there
-        pass
-    pass
+        try:
+            with open(confound_measures_file) as f:
+                confound_measures = f.readlines()[0].split(",")
+        except IOError:
+            raise IOError
+    else:
+        conf_mat = conf
