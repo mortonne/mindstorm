@@ -125,6 +125,7 @@ def run_betaseries(
     run,
     space,
     nuisance=None,
+    high_pass=0,
     sort_field=None,
 ):
     if sort_field is None:
@@ -145,7 +146,7 @@ def run_betaseries(
     img = nib.load(func_path)
     n_vol = img.header["dim"][4]
     design = create_betaseries_design(
-        events, "ev_index", n_vol, tr, time_offset, high_pass=0
+        events, "ev_index", n_vol, tr, time_offset, high_pass=high_pass
     )
 
     # get corresponding events; keep any fields that are consistent across
@@ -217,7 +218,7 @@ def run_betaseries(
     type=str,
     help="Colon-separated list of fields to sort by for output order",
 )
-@click.option("--hp-filter", help="Highpass filter in Hz", type=float)
+@click.option("--high-pass", help="Highpass filter in Hz", type=float)
 @click.option("--smooth", help="Smoothing kernel FWHM", type=float)
 @click.option(
     "--confound-file", help="Path to confound matrix file", type=click.Path(exists=True)
@@ -237,7 +238,7 @@ def betaseries(
     space,
     events_category,
     sort_field,
-    hp_filter,
+    high_pass,
     smooth,
     confound_file,
 ):
@@ -267,6 +268,7 @@ def betaseries(
         run,
         space,
         nuisance=nuisance,
+        high_pass=high_pass,
         sort_field=sort_field,
     )
 
@@ -288,7 +290,7 @@ def betaseries(
     type=str,
     help="Colon-separated list of fields to sort by for output order",
 )
-@click.option("--hp-filter", help="Highpass filter in Hz", type=float, default=0)
+@click.option("--high-pass", help="Highpass filter in Hz", type=float, default=0)
 @click.option("--smooth", help="Smoothing kernel FWHM", type=float)
 @click.option("--confound-measures", help="List of confound measures to include")
 @click.option(
@@ -310,7 +312,7 @@ def betaseries_bids(
     events_field,
     events_category,
     sort_field,
-    hp_filter,
+    high_pass,
     smooth,
     confound_measures,
     exclude_motion,
@@ -370,5 +372,6 @@ def betaseries_bids(
         run,
         space,
         nuisance=nuisance,
+        high_pass=high_pass,
         sort_field=sort_field,
     )
