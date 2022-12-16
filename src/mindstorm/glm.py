@@ -400,7 +400,7 @@ def betaseries(
     type=int,
     nargs=2,
     default=(-1, 2),
-    help="Range of frames to exclude around high motion",
+    help="Range of frames to exclude around high motion (default is (-1, 2))",
 )
 def betaseries_bids(
     data_dir,
