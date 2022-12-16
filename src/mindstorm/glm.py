@@ -389,7 +389,9 @@ def betaseries(
 )
 @click.option("--high-pass", help="Highpass filter in Hz", type=float, default=0)
 @click.option("--smooth", help="Smoothing kernel FWHM", type=float)
-@click.option("--confound-measures", help="List of confound measures to include")
+@click.option(
+    "--confound-measures", help="Colon-separated list of confound measures to include"
+)
 @click.option(
     "--censor-motion/--no-censor-motion",
     default=False,
