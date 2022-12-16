@@ -35,18 +35,24 @@ def create_betaseries_design(events, trial_column, n_vol, tr, time_offset, high_
     return design
 
 
-def create_confound_matrix(confounds, regressors, exclude_motion=False):
+def create_confound_matrix(confounds, regressors=None, exclude_motion=False):
     """Prepare betaseries design matrix and confounds."""
     # create nuisance regressor matrix
-    raw = confounds.get(regressors).to_numpy()
-    nuisance = raw - np.nanmean(raw, 0)
-    nuisance[np.isnan(nuisance)] = 0
+    if regressors is not None:
+        raw = confounds.get(regressors).to_numpy()
+        nuisance = raw - np.nanmean(raw, 0)
+        nuisance[np.isnan(nuisance)] = 0
+    else:
+        nuisance = None
 
     # exclude motion outliers
     if exclude_motion:
         outliers = confounds.filter(like="motion_outlier")
         if not outliers.empty:
-            nuisance = np.hstack([nuisance, outliers.to_numpy()])
+            if nuisance is not None:
+                nuisance = np.hstack([nuisance, outliers.to_numpy()])
+            else:
+                nuisance = outliers.to_numpy()
     return nuisance
 
 
