@@ -29,6 +29,7 @@ dependencies = [
 
 [project.scripts]
 betaseries = "mindstorm.glm:betaseries"
+betaseries-bids = "mindstorm.glm:betaseries_bids"
 
 [build-system]
 requires = ["setuptools", "wheel"]
