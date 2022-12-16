@@ -105,6 +105,89 @@ def estimate_betaseries(data, design, confound=None):
     return beta
 
 
+def run_betaseries(
+    events_path,
+    events_field,
+    n_vol,
+    tr,
+    time_offset,
+    func_path,
+    mask_name,
+    mask_file,
+    out_dir,
+    subject,
+    task,
+    run,
+    space,
+    nuisance=None,
+    sort_field=None,
+):
+    if sort_field is None:
+        sort_field = events_field
+
+    # load events
+    events = pd.read_table(events_path)
+
+    # add an EV name column (necessary to avoid name restrictions in nilearn)
+    evs = events.sort_values(sort_field)[events_field].unique()
+    n_ev = len(evs)
+    ev_inds = np.arange(n_ev)
+    ev_names = [f"ev{e:03d}" for e in ev_inds]
+    events['ev'] = events[events_field]
+    events['ev_index'] = events[events_field].map(dict(zip(evs, ev_names)))
+
+    # create design matrix
+    design = create_betaseries_design(
+        events, "ev_index", n_vol, tr, time_offset, high_pass=0
+    )
+
+    # get corresponding events; keep any fields that are consistent across
+    # presentations
+    n = events.groupby('ev_index').apply(lambda x: x.nunique()).reset_index(drop=True)
+    consistent = (n == 1).all()
+    consistent_fields = consistent[consistent].index
+    ev_events = (
+        events.groupby('ev_index')
+        .first()
+        .reset_index()
+        .get(consistent_fields)
+        .drop(columns=['ev', 'ev_index'])
+    )
+
+    # create confound matrix
+    mat = design.iloc[:, :n_ev].to_numpy()
+    confound = np.hstack((design.iloc[:, n_ev:-1].to_numpy(), nuisance))
+
+    # load functional data
+    bold_vol = nib.load(func_path)
+    mask_vol = nib.load(mask_file)
+    bold_img = bold_vol.get_fdata()
+    mask_img = mask_vol.get_fdata().astype(bool)
+    data = bold_img[mask_img].T
+
+    # estimate betaseries
+    beta = estimate_betaseries(data, mat, confound=confound)
+    out_data = np.zeros([*mask_img.shape, beta.shape[0]])
+    out_data[mask_img, :] = beta.T
+
+    # save betaseries image
+    sub_dir = out_dir / f"sub-{subject}"
+    sub_dir.mkdir(parents=True, exist_ok=True)
+    prefix = f"sub-{subject}_task-{task}_run-{run}"
+    beta_path = sub_dir / f"{prefix}_space-{space}_label-{mask_name}_betaseries.nii.gz"
+    new_img = nib.Nifti1Image(out_data, mask_vol.affine, mask_vol.header)
+    nib.save(new_img, beta_path)
+
+    # save mask
+    mask_path = sub_dir / f"{prefix}_space-{space}_label-{mask_name}_mask.nii.gz"
+    new_img = nib.Nifti1Image(mask_img, mask_vol.affine, mask_vol.header)
+    nib.save(new_img, mask_path)
+
+    # save corresponding events
+    evs_path = sub_dir / f"{prefix}_desc-events_timeseries.tsv"
+    ev_events.to_csv(evs_path, sep="\t", index=False, na_rep="n/a")
+
+
 @click.command()
 @click.argument("bold_file", type=click.Path(exists=True))
 @click.argument("tr", type=float)
@@ -224,17 +307,6 @@ def betaseries_bids(
         / f"sub-{subject}_task-{task}_run-{run}_desc-confounds_timeseries.tsv"
     )
 
-    # load events
-    events = pd.read_table(events_path)
-
-    # add an EV name column (necessary to avoid name restrictions in nilearn)
-    evs = events.sort_values(sort_field)[events_field].unique()
-    n_ev = len(evs)
-    ev_inds = np.arange(n_ev)
-    ev_names = [f"ev{e:03d}" for e in ev_inds]
-    events['ev'] = events[events_field]
-    events['ev_index'] = events[events_field].map(dict(zip(evs, ev_names)))
-
     # load functional timeseries information
     img = nib.load(func_path)
     n_vol = img.header["dim"][4]
@@ -244,61 +316,25 @@ def betaseries_bids(
     tr = func_param["RepetitionTime"]
     time_offset = func_param["StartTime"]
 
-    # create design matrix
-    design = create_betaseries_design(
-        events, "ev_index", n_vol, tr, time_offset, high_pass=0
-    )
-
-    # get corresponding events; keep any fields that are consistent across
-    # presentations
-    n = events.groupby('ev_index').apply(lambda x: x.nunique()).reset_index(drop=True)
-    consistent = (n == 1).all()
-    consistent_fields = consistent[consistent].index
-    ev_events = (
-        events.groupby('ev_index')
-        .first()
-        .reset_index()
-        .get(consistent_fields)
-        .drop(columns=['ev', 'ev_index'])
-    )
-
-    # create confound matrix
+    # create nuisance regressor matrix
     confounds = pd.read_table(confound_path)
     nuisance = create_confound_matrix(confounds, confound_measures, exclude_motion)
-    mat = design.iloc[:, :n_ev].to_numpy()
-    confound = np.hstack((design.iloc[:, n_ev:-1].to_numpy(), nuisance))
 
-    # load functional data
-    bold_vol = nib.load(func_path)
-    mask_vol = nib.load(mask_file)
-    bold_img = bold_vol.get_fdata()
-    mask_img = mask_vol.get_fdata().astype(bool)
-    data = bold_img[mask_img].T
-
-    # estimate betaseries
-    beta = estimate_betaseries(data, mat, confound=confound)
-    out_data = np.zeros([*mask_img.shape, beta.shape[0]])
-    out_data[mask_img, :] = beta.T
-
-    # save betaseries image
-    sub_dir = out_dir / f"sub-{subject}"
-    sub_dir.mkdir(parents=True, exist_ok=True)
-    prefix = f"sub-{subject}_task-{task}_run-{run}"
-    beta_path = (
-        sub_dir
-        / f"{prefix}_space-{space}_label-{mask_name}_betaseries.nii.gz"
+    # run betaseries estimation and save results
+    run_betaseries(
+        events_path,
+        events_field,
+        n_vol,
+        tr,
+        time_offset,
+        func_path,
+        mask_name,
+        mask_file,
+        out_dir,
+        subject,
+        task,
+        run,
+        space,
+        nuisance=nuisance,
+        sort_field=sort_field,
     )
-    new_img = nib.Nifti1Image(out_data, mask_vol.affine, mask_vol.header)
-    nib.save(new_img, beta_path)
-
-    # save mask
-    mask_path = (
-        sub_dir
-        / f"{prefix}_space-{space}_label-{mask_name}_mask.nii.gz"
-    )
-    new_img = nib.Nifti1Image(mask_img, mask_vol.affine, mask_vol.header)
-    nib.save(new_img, mask_path)
-
-    # save corresponding events
-    evs_path = sub_dir / f"{prefix}_desc-events_timeseries.tsv"
-    ev_events.to_csv(evs_path, sep="\t", index=False, na_rep="n/a")
