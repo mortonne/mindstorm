@@ -108,7 +108,6 @@ def estimate_betaseries(data, design, confound=None):
 def run_betaseries(
     events_path,
     events_field,
-    n_vol,
     tr,
     time_offset,
     func_path,
@@ -137,6 +136,8 @@ def run_betaseries(
     events['ev_index'] = events[events_field].map(dict(zip(evs, ev_names)))
 
     # create design matrix
+    img = nib.load(func_path)
+    n_vol = img.header["dim"][4]
     design = create_betaseries_design(
         events, "ev_index", n_vol, tr, time_offset, high_pass=0
     )
@@ -308,8 +309,6 @@ def betaseries_bids(
     )
 
     # load functional timeseries information
-    img = nib.load(func_path)
-    n_vol = img.header["dim"][4]
     func_json = func_path.with_suffix("").with_suffix(".json")
     with open(func_json, "r") as f:
         func_param = json.load(f)
@@ -324,7 +323,6 @@ def betaseries_bids(
     run_betaseries(
         events_path,
         events_field,
-        n_vol,
         tr,
         time_offset,
         func_path,
