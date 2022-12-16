@@ -262,7 +262,11 @@ def run_betaseries(
 @click.argument("task", type=str)
 @click.argument("run", type=str)
 @click.argument("space", type=str)
-@click.option("--events-category", type=str, help="Field with event category")
+@click.option(
+    "--events-category",
+    type=str,
+    help="Field with event category (categories are modeled as separate regressors)",
+)
 @click.option(
     "--sort-field",
     type=str,
@@ -292,6 +296,43 @@ def betaseries(
     smooth,
     confound_file,
 ):
+    """
+    Create a betaseries image estimating stimulus activity for a functional run.
+
+    This script is designed to be flexible in where data are located, but assumes
+    that confound regressors are pre-made and stored in a text file.
+
+    \b
+    Required inputs
+    ---------------
+    bold_file
+        Path to NIfTI file with functional timeseries data.
+    tr
+        Repetition time in s.
+    time_offset
+        Time in s that frames were collected, relative to time zero.
+    mask_name
+        Name of the mask to use when selecting voxels to analyze.
+    mask_file
+        Path to a binary mask indicating voxels to analyze.
+    events_file
+        Path to a tab- or comma-separated values file with task events. Must
+        include onset and duration fields (see BIDS specification for task events).
+    events_field
+        Column of the events file to use to indicate individual EVs (explanatory
+        variables) to model.
+    out_dir
+        Path to main output directory.
+    subject
+        Subject ID.
+    task
+        Task code.
+    run
+        Run number.
+    space
+        Space in which the data should be analyzed (must have been a space output
+        by fMRIPrep).
+    """
     if sort_field is None:
         sort_field = events_field
     else:
@@ -336,7 +377,11 @@ def betaseries(
 @click.argument("mask_name", type=str)
 @click.argument("mask_file", type=click.Path(exists=True))
 @click.argument("events_field", type=str)
-@click.option("--events-category", type=str, help="Field with event category")
+@click.option(
+    "--events-category",
+    type=str,
+    help="Field with event category (categories are modeled as separate regressors)",
+)
 @click.option(
     "--sort-field",
     type=str,
@@ -376,6 +421,38 @@ def betaseries_bids(
     censor_motion,
     censor_motion_range,
 ):
+    """
+    Create a betaseries image estimating stimulus activity for a functional run.
+
+    This script is designed to use BIDS-formatted data and data preprocessed
+    using fMRIPrep.
+
+    \b
+    Required inputs
+    ---------------
+    data_dir
+        Path to a BIDS-compliant dataset with task events.
+    fmriprep_dir
+        Path to fMRIPrep output.
+    out_dir
+        Path to main output directory.
+    subject
+        Subject ID.
+    task
+        Task code.
+    run
+        Run number.
+    space
+        Space in which the data should be analyzed (must have been a space output
+        by fMRIPrep).
+    mask_name
+        Name of the mask to use when selecting voxels to analyze.
+    mask_file
+        Path to a binary mask indicating voxels to analyze.
+    events_field
+        Column of the events file to use to indicate individual EVs (explanatory
+        variables) to model.
+    """
     data_dir = Path(data_dir)
     fmriprep_dir = Path(fmriprep_dir)
     if sort_field is None:
