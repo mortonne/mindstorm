@@ -206,7 +206,6 @@ def run_betaseries(
 @click.argument("mask_file", type=click.Path(exists=True))
 @click.argument("events_file", type=click.Path(exists=True))
 @click.argument("events_field", type=str)
-@click.argument("confound_file", type=click.Path(exists=True))
 @click.argument("out_dir", type=click.Path())
 @click.argument("subject", type=str)
 @click.argument("task", type=str)
@@ -220,6 +219,9 @@ def run_betaseries(
 )
 @click.option("--hp-filter", help="Highpass filter in Hz", type=float)
 @click.option("--smooth", help="Smoothing kernel FWHM", type=float)
+@click.option(
+    "--confound-file", help="Path to confound matrix file", type=click.Path(exists=True)
+)
 def betaseries(
     bold_file,
     tr,
@@ -228,7 +230,6 @@ def betaseries(
     mask_file,
     events_file,
     events_field,
-    confound_file,
     out_dir,
     subject,
     task,
@@ -238,9 +239,13 @@ def betaseries(
     sort_field,
     hp_filter,
     smooth,
+    confound_file,
 ):
     # load nuisance regressors
-    nuisance = np.loadtxt(confound_file)
+    if confound_file is not None:
+        nuisance = np.loadtxt(confound_file)
+    else:
+        nuisance = None
 
     # run betaseries estimation and save results
     run_betaseries(
