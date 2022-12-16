@@ -172,20 +172,20 @@ def run_betaseries(
     out_data[mask_img, :] = beta.T
 
     # save betaseries image
-    sub_dir = out_dir / f"sub-{subject}"
-    sub_dir.mkdir(parents=True, exist_ok=True)
+    sub_path = Path(out_dir) / f"sub-{subject}"
+    sub_path.mkdir(parents=True, exist_ok=True)
     prefix = f"sub-{subject}_task-{task}_run-{run}"
-    beta_path = sub_dir / f"{prefix}_space-{space}_label-{mask_name}_betaseries.nii.gz"
+    beta_path = sub_path / f"{prefix}_space-{space}_label-{mask_name}_betaseries.nii.gz"
     new_img = nib.Nifti1Image(out_data, mask_vol.affine, mask_vol.header)
     nib.save(new_img, beta_path)
 
     # save mask
-    mask_path = sub_dir / f"{prefix}_space-{space}_label-{mask_name}_mask.nii.gz"
+    mask_path = sub_path / f"{prefix}_space-{space}_label-{mask_name}_mask.nii.gz"
     new_img = nib.Nifti1Image(mask_img, mask_vol.affine, mask_vol.header)
     nib.save(new_img, mask_path)
 
     # save corresponding events
-    evs_path = sub_dir / f"{prefix}_desc-events_timeseries.tsv"
+    evs_path = sub_path / f"{prefix}_desc-events_timeseries.tsv"
     ev_events.to_csv(evs_path, sep="\t", index=False, na_rep="n/a")
 
 
@@ -280,7 +280,6 @@ def betaseries_bids(
 ):
     data_dir = Path(data_dir)
     fmriprep_dir = Path(fmriprep_dir)
-    out_dir = Path(out_dir)
     if sort_field is None:
         sort_field = events_field
     else:
