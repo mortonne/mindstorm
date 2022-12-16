@@ -35,50 +35,19 @@ def create_betaseries_design(events, trial_column, n_vol, tr, time_offset, high_
     return design
 
 
-def prepare_betaseries_design(
-    events_file, confound, tr, high_pass, exclude_motion=False
-):
+def create_confound_matrix(confounds, regressors, exclude_motion=False):
     """Prepare betaseries design matrix and confounds."""
-    # TODO: decide how to handle regressor selection
-
     # create nuisance regressor matrix
-    conf = pd.read_csv(conf_file, sep="\t")
-    include = [
-        "csf",
-        "csf_derivative1",
-        "white_matter",
-        "white_matter_derivative1",
-        "trans_x",
-        "trans_x_derivative1",
-        "trans_y",
-        "trans_y_derivative1",
-        "trans_z",
-        "trans_z_derivative1",
-        "rot_x",
-        "rot_x_derivative1",
-        "rot_y",
-        "rot_y_derivative1",
-        "rot_z",
-        "rot_z_derivative1",
-    ]
-    raw = conf.filter(include).to_numpy()
+    raw = confounds.get(regressors).to_numpy()
     nuisance = raw - np.nanmean(raw, 0)
     nuisance[np.isnan(nuisance)] = 0
 
     # exclude motion outliers
     if exclude_motion:
-        outliers = conf.filter(like="motion_outlier")
+        outliers = confounds.filter(like="motion_outlier")
         if not outliers.empty:
             nuisance = np.hstack([nuisance, outliers.to_numpy()])
-
-    # create design matrix
-    n_sample = len(conf)
-    events = pd.read_csv(events_file, sep="\t")
-    design = create_betaseries_design(events, n_sample, tr, high_pass)
-    n_object = events["object"].nunique()
-    mat = design.iloc[:, :n_object].to_numpy()
-    confound = np.hstack((design.iloc[:, n_object:-1].to_numpy(), nuisance))
-    return mat, confound
+    return nuisance
 
 
 def estimate_betaseries(data, design, confound=None):
