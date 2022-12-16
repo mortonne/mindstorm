@@ -132,8 +132,8 @@ def run_betaseries(
     n_ev = len(evs)
     ev_inds = np.arange(n_ev)
     ev_names = [f"ev{e:03d}" for e in ev_inds]
-    events['ev'] = events[events_field]
-    events['ev_index'] = events[events_field].map(dict(zip(evs, ev_names)))
+    events["ev"] = events[events_field]
+    events["ev_index"] = events[events_field].map(dict(zip(evs, ev_names)))
 
     # create design matrix
     img = nib.load(func_path)
@@ -144,15 +144,15 @@ def run_betaseries(
 
     # get corresponding events; keep any fields that are consistent across
     # presentations
-    n = events.groupby('ev_index').apply(lambda x: x.nunique()).reset_index(drop=True)
+    n = events.groupby("ev_index").apply(lambda x: x.nunique()).reset_index(drop=True)
     consistent = (n == 1).all()
     consistent_fields = consistent[consistent].index
     ev_events = (
-        events.groupby('ev_index')
+        events.groupby("ev_index")
         .first()
         .reset_index()
         .get(consistent_fields)
-        .drop(columns=['ev', 'ev_index'])
+        .drop(columns=["ev", "ev_index"])
     )
 
     # create confound matrix
@@ -301,9 +301,9 @@ def betaseries_bids(
     if sort_field is None:
         sort_field = events_field
     else:
-        sort_field = sort_field.split(':')
+        sort_field = sort_field.split(":")
     if confound_measures is not None:
-        confound_measures = confound_measures.split(':')
+        confound_measures = confound_measures.split(":")
 
     # task events, functional data, and confounds
     events_path = (
