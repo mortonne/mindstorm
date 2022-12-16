@@ -71,7 +71,7 @@ def create_confound_matrix(
     return nuisance
 
 
-def estimate_betaseries(data, design, confound=None):
+def estimate_betaseries(data, design, confound=None, category=None):
     """
     Estimate beta images for a set of trials.
 
@@ -88,12 +88,14 @@ def estimate_betaseries(data, design, confound=None):
         [timepoints x regressors] array with regressors of no interest,
         which will be included in each model.
 
+    category : numpy.ndarray
+        [EVs] array with the category label of each EV.
+
     Returns
     -------
     beta : numpy.ndarray
         [EVs by voxels] array of beta estimates.
     """
-    # TODO: handle hierarchical designs (separate trial classes)
     n_trial = design.shape[1]
     n_sample = data.shape[0]
     beta_maker = np.zeros((n_trial, n_sample))
@@ -103,8 +105,17 @@ def estimate_betaseries(data, design, confound=None):
         dm_trial = design[:, ev, np.newaxis]
 
         # other trials, summed together
-        other_trial_evs = [x for x in trial_evs if x != ev]
-        dm_otherevs = np.sum(design[:, other_trial_evs, np.newaxis], 1)
+        if category is not None:
+            ucat = np.unique(category)
+            dm_otherevs = np.zeros((design.shape[0], len(ucat)))
+            for j, cat in enumerate(ucat):
+                other_evs = [
+                    x for x, c in zip(trial_evs, category) if x != ev and c == cat
+                ]
+                dm_otherevs[:, j] = np.sum(design[:, other_evs], 1)
+        else:
+            other_trial_evs = [x for x in trial_evs if x != ev]
+            dm_otherevs = np.sum(design[:, other_trial_evs, np.newaxis], 1)
 
         # put together the design matrix
         if confound is not None:
@@ -139,6 +150,7 @@ def run_betaseries(
     task,
     run,
     space,
+    events_category=None,
     nuisance=None,
     high_pass=0,
     smooth_fwhm=None,
@@ -177,6 +189,10 @@ def run_betaseries(
         .get(consistent_fields)
         .drop(columns=["ev", "ev_index"])
     )
+    if events_category is not None:
+        category = ev_events[events_category]
+    else:
+        category = None
 
     # create confound matrix
     mat = design.iloc[:, :n_ev].to_numpy()
@@ -214,7 +230,7 @@ def run_betaseries(
     data = bold_img[mask_img].T
 
     # estimate betaseries
-    beta = estimate_betaseries(data, mat, confound=confound)
+    beta = estimate_betaseries(data, mat, confound=confound, category=category)
     out_data = np.zeros([*mask_img.shape, beta.shape[0]])
     out_data[mask_img, :] = beta.T
 
@@ -301,6 +317,7 @@ def betaseries(
         task,
         run,
         space,
+        events_category=events_category,
         nuisance=nuisance,
         high_pass=high_pass,
         smooth_fwhm=smooth,
@@ -415,6 +432,7 @@ def betaseries_bids(
         task,
         run,
         space,
+        events_category=events_category,
         nuisance=nuisance,
         high_pass=high_pass,
         smooth_fwhm=smooth,
