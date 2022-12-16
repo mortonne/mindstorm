@@ -241,6 +241,11 @@ def betaseries(
     smooth,
     confound_file,
 ):
+    if sort_field is None:
+        sort_field = events_field
+    else:
+        sort_field = sort_field.split(":")
+
     # load nuisance regressors
     if confound_file is not None:
         nuisance = np.loadtxt(confound_file)
