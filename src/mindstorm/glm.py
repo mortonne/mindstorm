@@ -1,11 +1,13 @@
 """General linear modeling of fMRI data."""
 
 from pathlib import Path
+import logging
 import json
 import numpy as np
 import pandas as pd
 import nibabel as nib
 from nilearn.glm import first_level
+from nipype.interfaces import afni
 import click
 
 
@@ -126,6 +128,7 @@ def run_betaseries(
     space,
     nuisance=None,
     high_pass=0,
+    smooth_fwhm=None,
     sort_field=None,
 ):
     if sort_field is None:
@@ -169,6 +172,27 @@ def run_betaseries(
     else:
         confound = design.iloc[:, n_ev:-1]
 
+    # prepare output directory
+    sub_path = Path(out_dir) / f"sub-{subject}"
+    sub_path.mkdir(parents=True, exist_ok=True)
+    prefix = f"sub-{subject}_task-{task}_run-{run}"
+
+    # smooth functional data within mask
+    if smooth_fwhm is not None:
+        smooth_path = (
+            sub_path
+            / f"{prefix}_space-{space}_label-{mask_name}_desc-smooth_bold.nii.gz"
+        )
+        logging.getLogger('nipype.interface').setLevel(0)
+        bim = afni.BlurInMask()
+        bim.inputs.in_file = func_path
+        bim.inputs.mask = mask_file
+        bim.inputs.fwhm = smooth_fwhm
+        bim.inputs.out_file = smooth_path
+        bim.inputs.options = "-overwrite"
+        bim.run()
+        func_path = smooth_path
+
     # load functional data
     bold_vol = nib.load(func_path)
     mask_vol = nib.load(mask_file)
@@ -182,9 +206,6 @@ def run_betaseries(
     out_data[mask_img, :] = beta.T
 
     # save betaseries image
-    sub_path = Path(out_dir) / f"sub-{subject}"
-    sub_path.mkdir(parents=True, exist_ok=True)
-    prefix = f"sub-{subject}_task-{task}_run-{run}"
     beta_path = sub_path / f"{prefix}_space-{space}_label-{mask_name}_betaseries.nii.gz"
     new_img = nib.Nifti1Image(out_data, mask_vol.affine, mask_vol.header)
     nib.save(new_img, beta_path)
@@ -269,6 +290,7 @@ def betaseries(
         space,
         nuisance=nuisance,
         high_pass=high_pass,
+        smooth_fwhm=smooth,
         sort_field=sort_field,
     )
 
@@ -373,5 +395,6 @@ def betaseries_bids(
         space,
         nuisance=nuisance,
         high_pass=high_pass,
+        smooth_fwhm=smooth,
         sort_field=sort_field,
     )
