@@ -192,46 +192,64 @@ def run_betaseries(
 @click.command()
 @click.argument("bold_file", type=click.Path(exists=True))
 @click.argument("tr", type=float)
-@click.argument("events_file", type=click.Path(exists=True))
-@click.argument("events_id", type=str)
+@click.argument("time_offset", type=float)
+@click.argument("mask_name", type=str)
 @click.argument("mask_file", type=click.Path(exists=True))
+@click.argument("events_file", type=click.Path(exists=True))
+@click.argument("events_field", type=str)
 @click.argument("confound_file", type=click.Path(exists=True))
-@click.argument("betaseries_file", type=click.Path())
+@click.argument("out_dir", type=click.Path())
+@click.argument("subject", type=str)
+@click.argument("task", type=str)
+@click.argument("run", type=str)
+@click.argument("space", type=str)
 @click.option("--events-category", type=str, help="Field with event category")
+@click.option(
+    "--sort-field",
+    type=str,
+    help="Colon-separated list of fields to sort by for output order",
+)
 @click.option("--hp-filter", help="Highpass filter in Hz", type=float)
 @click.option("--smooth", help="Smoothing kernel FWHM", type=float)
-@click.option("--confound-measures", help="List of confound measures to include")
-@click.option(
-    "--confound-measures-file", help="File with list of confound measures to include"
-)
 def betaseries(
     bold_file,
-    events_file,
-    events_id,
+    tr,
+    time_offset,
+    mask_name,
     mask_file,
+    events_file,
+    events_field,
     confound_file,
-    betaseries_file,
+    out_dir,
+    subject,
+    task,
+    run,
+    space,
     events_category,
+    sort_field,
     hp_filter,
     smooth,
-    confound_measures,
-    confound_measures_file,
 ):
-    # TODO: run functions to estimate model
-    # TODO: write out images
-    # TODO: add logging
-    conf = pd.read_table(confound_file)
-    if confound_measures is not None:
-        conf_mat = conf[confound_measures]
-    elif confound_measures_file is not None:
-        # load from file and filter from there
-        try:
-            with open(confound_measures_file) as f:
-                confound_measures = f.readlines()[0].split(",")
-        except IOError:
-            raise IOError
-    else:
-        conf_mat = conf
+    # load nuisance regressors
+    nuisance = np.loadtxt(confound_file)
+
+    # run betaseries estimation and save results
+    run_betaseries(
+        events_file,
+        events_field,
+        tr,
+        time_offset,
+        bold_file,
+        mask_name,
+        mask_file,
+        out_dir,
+        subject,
+        task,
+        run,
+        space,
+        nuisance=nuisance,
+        sort_field=sort_field,
+    )
 
 
 @click.command()
