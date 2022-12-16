@@ -163,7 +163,10 @@ def run_betaseries(
 
     # create confound matrix
     mat = design.iloc[:, :n_ev].to_numpy()
-    confound = np.hstack((design.iloc[:, n_ev:-1].to_numpy(), nuisance))
+    if nuisance is not None:
+        confound = np.hstack((design.iloc[:, n_ev:-1].to_numpy(), nuisance))
+    else:
+        confound = design.iloc[:, n_ev:-1]
 
     # load functional data
     bold_vol = nib.load(func_path)
