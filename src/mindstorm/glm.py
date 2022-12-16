@@ -4,7 +4,6 @@ import os
 import numpy as np
 import pandas as pd
 import nibabel as nib
-import sklearn.linear_model as lm
 from nilearn.glm import first_level
 import click
 
@@ -103,83 +102,6 @@ def estimate_betaseries(data, design, confound=None):
     # estimation for all trials at once
     beta = np.dot(beta_maker, data)
     return beta
-
-
-def run_betaseries(
-    raw_dir,
-    post_dir,
-    mask,
-    bold,
-    subject,
-    run,
-    high_pass=0,
-    space="T1w",
-    mask_dir="func",
-    mask_thresh=None,
-    exclude_motion=False,
-):
-    """Estimate betaseries for one run."""
-    # TODO: rewrite for general inputs
-    # TODO: consider adding smoothing
-
-    tr = 2
-    subj_raw = os.path.join(raw_dir, f"sub-{subject}", "func")
-    subj_post = os.path.join(post_dir, f"sub-{subject}", "func")
-
-    # task events
-    events_file = os.path.join(
-        subj_raw, f"sub-{subject}_task-struct_run-{run}_events.tsv"
-    )
-    if not os.path.exists(events_file):
-        raise IOError(f"Events do not exist: {events_file}")
-
-    # ROI/brain mask
-    if mask_dir == "func":
-        mask_file = get_func_mask(post_dir, subject, "struct", run, space, desc=mask)
-    else:
-        mask_file = get_anat_mask(post_dir, subject, space, label=mask)
-    if not os.path.exists(mask_file):
-        raise IOError(f"Mask file does not exist: {mask_file}")
-
-    # BOLD scan
-    bold_file = os.path.join(
-        subj_post,
-        f"sub-{subject}_task-struct_run-{run}_space-{space}_desc-{bold}_bold.nii.gz",
-    )
-    if not os.path.exists(bold_file):
-        raise IOError(f"BOLD file does not exist: {bold_file}")
-
-    # confounds file
-    conf_file = os.path.join(
-        subj_post, f"sub-{subject}_task-struct_run-{run}_desc-confounds_timeseries.tsv"
-    )
-    if not os.path.exists(conf_file):
-        raise IOError(f"Confounds file does not exist: {conf_file}")
-
-    # create nuisance regressor matrix
-    mat, confound = prepare_betaseries_design(
-        events_file, conf_file, tr, high_pass, exclude_motion
-    )
-
-    # load functional data
-    bold_vol = nib.load(bold_file)
-    mask_vol = nib.load(mask_file)
-    bold_img = bold_vol.get_fdata()
-    if mask_thresh is None:
-        mask_img = mask_vol.get_fdata().astype(bool)
-    else:
-        mask_img = mask_vol.get_fdata() > mask_thresh
-    data = bold_img[mask_img].T
-
-    # estimate each beta image
-    beta = estimate_betaseries(data, mat, confound)
-
-    # estimate model residuals (for smoothness calculation)
-    model = lm.LinearRegression()
-    design = np.hstack([mat, confound])
-    model.fit(design, data)
-    resid = data - model.predict(design)
-    return beta, resid
 
 
 @click.command()
