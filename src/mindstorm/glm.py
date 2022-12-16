@@ -196,7 +196,7 @@ def run_betaseries(
             sub_path
             / f"{prefix}_space-{space}_label-{mask_name}_desc-smooth_bold.nii.gz"
         )
-        logging.getLogger('nipype.interface').setLevel(0)
+        logging.getLogger("nipype.interface").setLevel(0)
         bim = afni.BlurInMask()
         bim.inputs.in_file = func_path
         bim.inputs.mask = mask_file
