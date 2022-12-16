@@ -37,7 +37,9 @@ def create_betaseries_design(events, trial_column, n_vol, tr, time_offset, high_
     return design
 
 
-def create_confound_matrix(confounds, regressors=None, exclude_motion=False):
+def create_confound_matrix(
+    confounds, regressors=None, censor_motion=False, censor_motion_range=(-1, 2)
+):
     """Prepare betaseries design matrix and confounds."""
     # create nuisance regressor matrix
     if regressors is not None:
@@ -48,13 +50,24 @@ def create_confound_matrix(confounds, regressors=None, exclude_motion=False):
         nuisance = None
 
     # exclude motion outliers
-    if exclude_motion:
+    if censor_motion:
         outliers = confounds.filter(like="motion_outlier")
         if not outliers.empty:
+            # get high-motion times
+            motion_ind = np.where(outliers)[0]
+
+            # add offsets to create window around those times
+            offsets = np.arange(censor_motion_range[0], censor_motion_range[1] + 1)
+            censor_ind = np.unique(motion_ind[:, np.newaxis] + offsets)
+            reg_ind = np.arange(len(censor_ind))
+
+            # assign separate regressor for each censored time point
+            mat = np.zeros((outliers.shape[0], len(censor_ind)))
+            mat[censor_ind, reg_ind] = 1
             if nuisance is not None:
-                nuisance = np.hstack([nuisance, outliers.to_numpy()])
+                nuisance = np.hstack([nuisance, mat])
             else:
-                nuisance = outliers.to_numpy()
+                nuisance = mat
     return nuisance
 
 
@@ -316,9 +329,15 @@ def betaseries(
 @click.option("--smooth", help="Smoothing kernel FWHM", type=float)
 @click.option("--confound-measures", help="List of confound measures to include")
 @click.option(
-    "--exclude-motion",
+    "--censor-motion/--no-censor-motion",
+    default=False,
+    help="Censor times around high-motion frames (default is no censoring)",
+)
+@click.option(
+    "--censor-motion-range",
     type=int,
     nargs=2,
+    default=(-1, 2),
     help="Range of frames to exclude around high motion",
 )
 def betaseries_bids(
@@ -337,7 +356,8 @@ def betaseries_bids(
     high_pass,
     smooth,
     confound_measures,
-    exclude_motion,
+    censor_motion,
+    censor_motion_range,
 ):
     data_dir = Path(data_dir)
     fmriprep_dir = Path(fmriprep_dir)
@@ -377,7 +397,9 @@ def betaseries_bids(
 
     # create nuisance regressor matrix
     confounds = pd.read_table(confound_path)
-    nuisance = create_confound_matrix(confounds, confound_measures, exclude_motion)
+    nuisance = create_confound_matrix(
+        confounds, confound_measures, censor_motion, censor_motion_range
+    )
 
     # run betaseries estimation and save results
     run_betaseries(
