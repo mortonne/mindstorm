@@ -25,6 +25,7 @@ dependencies = [
     "nilearn",
     "scikit-learn",
     "click",
+    "nipype",
 ]
 
 [project.scripts]
