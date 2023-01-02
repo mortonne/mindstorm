@@ -41,11 +41,14 @@ def create_confound_matrix(
     confounds, regressors=None, censor_motion=False, censor_motion_range=(-1, 2)
 ):
     """Prepare betaseries design matrix and confounds."""
+    nuisance_names = []
+
     # create nuisance regressor matrix
     if regressors is not None:
         raw = confounds.get(regressors).to_numpy()
         nuisance = raw - np.nanmean(raw, 0)
         nuisance[np.isnan(nuisance)] = 0
+        nuisance_names.extend(regressors)
     else:
         nuisance = None
 
@@ -68,7 +71,9 @@ def create_confound_matrix(
                 nuisance = np.hstack([nuisance, mat])
             else:
                 nuisance = mat
-    return nuisance
+            censor_names = [f"motion_{i + 1:03}" for i in range(mat.shape[1])]
+            nuisance_names.extend(censor_names)
+    return nuisance, nuisance_names
 
 
 def estimate_betaseries(data, design, confound=None, category=None):
@@ -493,7 +498,7 @@ def betaseries_bids(
 
     # create nuisance regressor matrix
     confounds = pd.read_table(confound_path)
-    nuisance = create_confound_matrix(
+    nuisance, nuisance_names = create_confound_matrix(
         confounds, confound_measures, censor_motion, censor_motion_range
     )
 
