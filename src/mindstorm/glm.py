@@ -6,6 +6,9 @@ import json
 import numpy as np
 import pandas as pd
 import nibabel as nib
+from scipy import stats
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 from nilearn.glm import first_level
 from nipype.interfaces import afni
 import click
@@ -157,6 +160,7 @@ def run_betaseries(
     space,
     events_category=None,
     nuisance=None,
+    nuisance_names=None,
     high_pass=0,
     smooth_fwhm=None,
     sort_field=None,
@@ -181,6 +185,7 @@ def run_betaseries(
     design = create_betaseries_design(
         events, "ev_index", n_vol, tr, time_offset, high_pass=high_pass
     )
+    design_header = design.columns.to_list()[:-1]
 
     # get corresponding events; keep any fields that are consistent across
     # presentations
@@ -203,8 +208,10 @@ def run_betaseries(
     mat = design.iloc[:, :n_ev].to_numpy()
     if nuisance is not None:
         confound = np.hstack((design.iloc[:, n_ev:-1].to_numpy(), nuisance))
+        design_header.extend(nuisance_names)
     else:
         confound = design.iloc[:, n_ev:-1]
+    full_design = pd.DataFrame(np.hstack([mat, confound]), columns=design_header)
 
     # prepare output directory
     sub_path = Path(out_dir) / f"sub-{subject}"
@@ -248,6 +255,15 @@ def run_betaseries(
     mask_path = sub_path / f"{prefix}_space-{space}_label-{mask_name}_mask.nii.gz"
     new_img = nib.Nifti1Image(mask_img, mask_vol.affine, mask_vol.header)
     nib.save(new_img, mask_path)
+
+    # save design
+    design_path = sub_path / f"{prefix}_desc-design_timeseries.tsv"
+    full_design.to_csv(design_path, sep="\t", index=False, na_rep="n/a")
+    mpl.use("Agg")
+    fig, ax = plt.subplots()
+    ax.axis("off")
+    ax.matshow(stats.zscore(full_design.to_numpy(), axis=0))
+    fig.savefig(design_path.with_suffix(".png"), pad_inches=0, dpi=600)
 
     # save corresponding events
     evs_path = sub_path / f"{prefix}_desc-events_timeseries.tsv"
@@ -346,8 +362,10 @@ def betaseries(
     # load nuisance regressors
     if confound_file is not None:
         nuisance = np.loadtxt(confound_file)
+        nuisance_names = [f"confound_{i + 1:03}" for i in range(nuisance.shape[1])]
     else:
         nuisance = None
+        nuisance_names = []
 
     # run betaseries estimation and save results
     run_betaseries(
@@ -365,6 +383,7 @@ def betaseries(
         space,
         events_category=events_category,
         nuisance=nuisance,
+        nuisance_names=nuisance_names,
         high_pass=high_pass,
         smooth_fwhm=smooth,
         sort_field=sort_field,
@@ -518,6 +537,7 @@ def betaseries_bids(
         space,
         events_category=events_category,
         nuisance=nuisance,
+        nuisance_names=nuisance_names,
         high_pass=high_pass,
         smooth_fwhm=smooth,
         sort_field=sort_field,
