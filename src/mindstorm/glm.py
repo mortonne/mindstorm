@@ -171,7 +171,7 @@ def run_betaseries(
     evs = events.sort_values(sort_field)[events_field].unique()
     n_ev = len(evs)
     ev_inds = np.arange(n_ev)
-    ev_names = [f"ev{e:03d}" for e in ev_inds]
+    ev_names = [f"ev_{e + 1:03}" for e in ev_inds]
     events["ev"] = events[events_field]
     events["ev_index"] = events[events_field].map(dict(zip(evs, ev_names)))
 
