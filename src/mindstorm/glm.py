@@ -165,7 +165,7 @@ def run_betaseries(
         sort_field = events_field
 
     # load events
-    events = pd.read_table(events_path)
+    events = pd.read_table(events_path, dtype={"group": "str"})
 
     # add an EV name column (necessary to avoid name restrictions in nilearn)
     evs = events.sort_values(sort_field)[events_field].unique()
