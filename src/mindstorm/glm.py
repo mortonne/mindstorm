@@ -6,7 +6,6 @@ import json
 import numpy as np
 import pandas as pd
 import nibabel as nib
-from scipy import stats
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from nilearn.glm import first_level
@@ -262,7 +261,10 @@ def run_betaseries(
     mpl.use("Agg")
     fig, ax = plt.subplots()
     ax.axis("off")
-    ax.matshow(stats.zscore(full_design.to_numpy(), axis=0))
+    full_mat = full_design.to_numpy()
+    full_min = np.min(full_mat, axis=0)
+    full_max = np.max(full_mat, axis=0)
+    ax.matshow((full_mat - full_min) / (full_max - full_min))
     fig.savefig(design_path.with_suffix(".png"), pad_inches=0, dpi=600)
 
     # save corresponding events
