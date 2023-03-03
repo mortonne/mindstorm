@@ -13,8 +13,40 @@ from nipype.interfaces import afni
 import click
 
 
-def create_betaseries_design(events, trial_column, n_vol, tr, time_offset, high_pass=0):
-    """Create a design matrix for betaseries estimation."""
+def create_simple_design(events, trial_column, n_vol, tr, time_offset, high_pass=0):
+    """
+    Create a simple design matrix.
+
+    Create a linear model design matrix for a "simple" design, i.e.,
+    one that only has one event regressor to be modeled.
+
+    Parameters
+    ----------
+    events : pandas.DataFrame
+        BIDS-compliant events table with onset and duration columns.
+
+    trial_column : str
+        Column of events to convolve with a hemodynamic response function.
+
+    n_vol : int
+        Number of volumes in the timeseries to be modeled.
+
+    tr : float
+        Repetition time, i.e., the sampling rate of the timeseries to
+        be modeled, in seconds.
+
+    time_offset : float
+        Start time of the first timeseries sample, in seconds.
+
+    high_pass : float
+        Cutoff frequency for the high-pass filter in Hz.
+
+    Returns
+    -------
+    design : pandas.DataFrame
+        Design matrix with a convolved event regressor and high-pass filter
+        nuisance regressors.
+    """
 
     # check for required columns in events
     required_columns = ["onset", "duration", trial_column]
@@ -42,7 +74,36 @@ def create_betaseries_design(events, trial_column, n_vol, tr, time_offset, high_
 def create_confound_matrix(
     confounds, regressors=None, censor_motion=False, censor_motion_range=(-1, 2)
 ):
-    """Prepare betaseries design matrix and confounds."""
+    """
+    Prepare confound matrix from fMRIPrep output.
+
+    Parameters
+    ----------
+    confounds : pandas.DataFrame
+        Table of confound timeseries output by fMRIPrep.
+
+    regressors : list of str
+        Confound regressors to include. Each regressor will be
+        mean-centered.
+
+    censor_motion : bool
+        If true, high-motion volumes will be censored (i.e., a
+        regressor will be added for each censored volumne to regress
+        out any activation specific to that timepoint).
+
+    censor_motion_range : tuple of int
+        First and last volumes to censor, relative to high-motion
+        volumes at time zero (e.g., -1 indicates volume before high-
+        motion volume, 2 indicates two timepoints after).
+
+    Returns
+    -------
+    nuisance : numpy.ndarray
+        Matrix of nuisance regressor timeseries.
+
+    nuisance_names : list of str
+        Name of each included nuisance regressor.
+    """
     nuisance_names = []
 
     # create nuisance regressor matrix
@@ -181,7 +242,7 @@ def run_betaseries(
     # create design matrix
     img = nib.load(func_path)
     n_vol = img.header["dim"][4]
-    design = create_betaseries_design(
+    design = create_simple_design(
         events, "ev_index", n_vol, tr, time_offset, high_pass=high_pass
     )
     design_header = design.columns.to_list()[:-1]
