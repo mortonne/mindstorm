@@ -274,7 +274,7 @@ def run_betaseries(
     full_design = pd.DataFrame(np.hstack([mat, confound]), columns=design_header)
 
     # prepare output directory
-    sub_path = Path(out_dir) / f"sub-{subject}"
+    sub_path = Path(out_dir) / f"sub-{subject}" / "func"
     sub_path.mkdir(parents=True, exist_ok=True)
     prefix = f"sub-{subject}_task-{task}_run-{run}"
 
