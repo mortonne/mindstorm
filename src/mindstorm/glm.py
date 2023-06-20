@@ -124,12 +124,16 @@ def create_confound_matrix(
 
             # add offsets to create window around those times
             offsets = np.arange(censor_motion_range[0], censor_motion_range[1] + 1)
+
+            # get unique and valid samples to censor
             censor_ind = np.unique(motion_ind[:, np.newaxis] + offsets)
-            reg_ind = np.arange(len(censor_ind))
+            n_sample = outliers.shape[0]
+            censor_ind = censor_ind[(censor_ind >= 0) & (censor_ind < n_sample)]
 
             # assign separate regressor for each censored time point
-            mat = np.zeros((outliers.shape[0], len(censor_ind)))
-            mat[censor_ind, reg_ind] = 1
+            n_censor = len(censor_ind)
+            mat = np.zeros((n_sample, n_censor))
+            mat[censor_ind, np.arange(n_censor)] = 1
             if nuisance is not None:
                 nuisance = np.hstack([nuisance, mat])
             else:
