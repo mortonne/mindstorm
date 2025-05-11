@@ -19,7 +19,7 @@ dependencies = [
     "numpy",
     "scipy",
     "pandas",
-    "seaborn",
+    "seaborn>=0.13.0",
     "pybids",
     "nibabel",
     "nilearn",

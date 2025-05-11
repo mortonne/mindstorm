@@ -192,13 +192,12 @@ def plot_swarm_bar(
     # plot error bars for the mean
     bar_prop = {
         'color': 'k',
-        'errwidth': 0.8,
         'capsize': 0.425,
         'edgecolor': 'k',
         'linewidth': 0.75,
-        'errcolor': 'k',
         'dodge': dodge,
         'palette': light,
+        'err_kws': {'color': 'k', 'linewidth': 0.8},
     }
     bar_prop.update(bar_kws)
     sns.barplot(data=data, x=x, y=y, hue=hue, ax=ax, **bar_prop, **kwargs)
